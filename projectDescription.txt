@@ -1,0 +1,2 @@
+This is just a visual studio project, so i can learn how to use openGL and keep track
+of my progress.
