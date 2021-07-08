@@ -1,2 +1,4 @@
 This is just a visual studio project, so i can learn how to use openGL and keep track
 of my progress.
+
+(Please note that this project is following the freecodecamp.org tutorial from youtube).
