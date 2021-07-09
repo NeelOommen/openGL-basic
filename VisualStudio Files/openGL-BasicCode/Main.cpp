@@ -33,9 +33,18 @@ int main() {
 
 	//temporary data for basic triangle
 	GLfloat vertices[] = {
-		-0.5f,0.5f,0.0f,
-		0.5f,0.5f,0.0f,
-		-1.0f,-0.5f,0.0f
+		-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f,
+		0.5f, -0.5f* float(sqrt(3)) / 3, 0.0f,
+		0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f,
+		-0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,
+		0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,
+		0.0f, - 0.5f * float(sqrt(3)) / 3, 0.0f
+	};
+
+	GLuint indices[] = {
+		0, 3, 5,
+		3, 2, 4,
+		5, 4, 1
 	};
 
 	//Creating our window
@@ -78,16 +87,21 @@ int main() {
 	glDeleteShader(fragmentShader);
 
 	//Setting up VBO's and VAO's
-	GLuint VAO, VBO;
+	GLuint VAO, VBO, IBO;
 
 	glGenVertexArrays(1,&VAO);
 
 	glGenBuffers(1,&VBO);
+	glGenBuffers(1, &IBO);
 	
 	//Binding simply makes that object the current "focus" of openGL, and all modifications will be made to it while it remains binded
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER,VBO);
 	glBufferData(GL_ARRAY_BUFFER,sizeof(vertices),vertices,GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(indices),indices,GL_STATIC_DRAW);
+
 
 	glVertexAttribPointer(0,sizeof(float),GL_FLOAT,GL_FALSE,3*sizeof(float),(void*)0);
 	glEnableVertexAttribArray(0);
@@ -95,6 +109,9 @@ int main() {
 	//for safety, we will unbind the vao and vbo so we don't unknowingly modify them
 	glBindBuffer(GL_ARRAY_BUFFER,0);
 	glBindVertexArray(0);
+	//Important to unbind IBO after the vao, as otherwise it gets removed from the vao
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+
 
 
 	
@@ -118,7 +135,9 @@ int main() {
 		glBindVertexArray(VAO);
 		
 		//Draw Call
-		glDrawArrays(GL_TRIANGLES,0,3);
+		//glDrawArrays(GL_TRIANGLES,0,3); this draw call is for raw vertex data only, no IBO
+		//IBO draw call
+		glDrawElements(GL_TRIANGLES,9,GL_UNSIGNED_INT,0);
 		
 		//Swap Buffers to get the image on screen
 		glfwSwapBuffers(window);
@@ -129,6 +148,7 @@ int main() {
 	//cleanup
 	glDeleteVertexArrays(1,&VAO);
 	glDeleteBuffers(1,&VBO);
+	glDeleteBuffers(1,&IBO);
 	glDeleteProgram(shaderProgram);
 
 	glfwDestroyWindow(window);
