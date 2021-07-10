@@ -1,2 +1,8 @@
-﻿  Main.cpp
+﻿  IndexBufferClass.cpp
+  Main.cpp
+D:\GitHub\openGL-basic\VisualStudio Files\openGL-BasicCode\Main.cpp(7,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  shaderClass.cpp
+  VertexArrayClass.cpp
+  VertexBufferClass.cpp
+  Generating Code...
   openGL-BasicCode.vcxproj -> D:\GitHub\openGL-basic\VisualStudio Files\openGL-BasicCode\x64\Debug\openGL-BasicCode.exe
