@@ -1,6 +1,7 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <cmath>
 
 #include "shaderClass.h"
 #include "VertexBufferClass.h"
@@ -13,12 +14,13 @@
 
 //temporary data for our basic triangles
 GLfloat vertices[] = {
-		-0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f,
-		0.5f, -0.5f * float(sqrt(3)) / 3, 0.0f,
-		0.0f, 0.5f * float(sqrt(3)) * 2 / 3, 0.0f,
-		-0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,
-		0.5f / 2, 0.5f * float(sqrt(3)) / 6, 0.0f,
-		0.0f, -0.5f * float(sqrt(3)) / 3, 0.0f
+		//x           y                             z   /    r     g      b
+		-0.5f,      -0.5f * float(sqrt(3)) / 3,     0.0f,    0.14f, 1.0f,  0.14f,
+		 0.5f,      -0.5f * float(sqrt(3)) / 3,     0.0f,    0.14f, 0.84f, 1.0f,
+		 0.0f,       0.5f * float(sqrt(3)) * 2 / 3, 0.0f,    1.0f,  0.14f, 0.14f,
+		-0.5f / 2,   0.5f * float(sqrt(3)) / 6,     0.0f,    1.0f,  0.66f, 0.14f,
+		 0.5f / 2,   0.5f * float(sqrt(3)) / 6,     0.0f,    0.68f, 0.14f, 1.0f,
+		 0.0f,      -0.5f * float(sqrt(3)) / 3,     0.0f,    0.14f, 1.0f,  0.68f
 };
 
 GLuint indices[] = {
@@ -69,7 +71,11 @@ int main() {
 	IBO ibo1(indices,sizeof(indices));
 
 	//linking the layout and vbo to the vao
-	vao1.linkLayout(vbo1,0);
+	vao1.linkAttrib(vbo1, 0, 3,GL_FLOAT,sizeof(float)*6,(void* )0);
+	vao1.linkAttrib(vbo1, 1, 3, GL_FLOAT, sizeof(float) * 6, (void*)(3*sizeof(float)));
+
+	GLuint scaleUniformID = glGetUniformLocation(shader.ID, "scale");
+
 
 	vao1.unbind();
 	vbo1.unbind();
@@ -79,17 +85,21 @@ int main() {
 	//sets the colour which is used when we clear our buffers
 	//Setting a cyan colour as the clear colour using format (r,g,b,a), using normalized values
 	//(cyan is an arbitrary chocie, it could be any colour)
-	glClearColor(0.0f, 0.93f, 1.0f, 1.0f);
+	glClearColor(0.18f, 0.18f, 0.18f, 1.0f);
 	//Actually clearing the buffer (here we are clearing the back buffer)
 	glClear(GL_COLOR_BUFFER_BIT);
 	//Swapping the Back Buffer and the Front Buffer (the front buffer is the one displayed on screen)
 	glfwSwapBuffers(window);
 
 	//loop
+	float scaleFactor = 0.0f;
+	float scaleIterator = 0.01f;
+	float maxScale = 0.7f;
 	while (!glfwWindowShouldClose(window)) {
-		glClearColor(0.0f, 0.93f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		shader.activateShader();
+		//can only access uniforms of th active shader program
+		glUniform1f(scaleUniformID, sin(scaleFactor) * maxScale);
 
 		//Bind buffers to be used
 		vao1.bind();
@@ -103,6 +113,7 @@ int main() {
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();
+		scaleFactor += scaleIterator;
 	}
 
 	//cleanup

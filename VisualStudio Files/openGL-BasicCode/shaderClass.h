@@ -12,6 +12,8 @@
 std::string get_file_data(const char* filename);
 
 class Shader {
+private:
+	void compileErrors(unsigned int shader, const char* type);
 public:
 	//Reference ID for openGL to refer to the shader program
 	GLuint ID;

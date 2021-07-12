@@ -46,17 +46,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="IndexBufferClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="shaderClass.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VertexBufferClass.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IndexBufferClass.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VertexArrayClass.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
