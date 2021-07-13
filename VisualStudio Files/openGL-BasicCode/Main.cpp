@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <cmath>
+#include <stb/stb_image.h>
 
 #include "shaderClass.h"
 #include "VertexBufferClass.h"
@@ -14,19 +15,16 @@
 
 //temporary data for our basic triangles
 GLfloat vertices[] = {
-		//x           y                             z   /    r     g      b
-		-0.5f,      -0.5f * float(sqrt(3)) / 3,     0.0f,    0.14f, 1.0f,  0.14f,
-		 0.5f,      -0.5f * float(sqrt(3)) / 3,     0.0f,    0.14f, 0.84f, 1.0f,
-		 0.0f,       0.5f * float(sqrt(3)) * 2 / 3, 0.0f,    1.0f,  0.14f, 0.14f,
-		-0.5f / 2,   0.5f * float(sqrt(3)) / 6,     0.0f,    1.0f,  0.66f, 0.14f,
-		 0.5f / 2,   0.5f * float(sqrt(3)) / 6,     0.0f,    0.68f, 0.14f, 1.0f,
-		 0.0f,      -0.5f * float(sqrt(3)) / 3,     0.0f,    0.14f, 1.0f,  0.68f
+	//   x       y       z              r       g       b               texX    texY
+		-0.5f,  -0.5f,   0.0f,			1.0f,   0.0f,   0.0f,			0.0f,   0.0f,
+		-0.5f,   0.5f,   0.0f,			0.0f,   1.0f,   0.0f,			0.0f,   1.0f,
+		 0.5f,   0.5f,   0.0f,			0.0f,   0.0f,   1.0f,			1.0f,   1.0f,
+		 0.5f,  -0.5f,   0.0f,			1.0f,   1.0f,   1.0f,			1.0f,   0.0f
 };
 
 GLuint indices[] = {
-		0, 3, 5,
-		3, 2, 4,
-		5, 4, 1
+	0,2,1,
+	0,3,2
 };
 
 
@@ -71,8 +69,9 @@ int main() {
 	IBO ibo1(indices,sizeof(indices));
 
 	//linking the layout and vbo to the vao
-	vao1.linkAttrib(vbo1, 0, 3,GL_FLOAT,sizeof(float)*6,(void* )0);
-	vao1.linkAttrib(vbo1, 1, 3, GL_FLOAT, sizeof(float) * 6, (void*)(3*sizeof(float)));
+	vao1.linkAttrib(vbo1, 0, 3,GL_FLOAT,  sizeof(float) * 8, (void* )0);
+	vao1.linkAttrib(vbo1, 1, 3, GL_FLOAT, sizeof(float) * 8, (void*)(3*sizeof(float)));
+	vao1.linkAttrib(vbo1, 2, 2, GL_FLOAT, sizeof(float) * 8, (void*)(6 * sizeof(float)));
 
 	GLuint scaleUniformID = glGetUniformLocation(shader.ID, "scale");
 
@@ -80,6 +79,39 @@ int main() {
 	vao1.unbind();
 	vbo1.unbind();
 	ibo1.unbind();
+
+	//Loading texture
+
+	int imgHeight, imgWidth, imgNumColCh;
+	//loads raw img data
+	//important to set flip to true as stbi loads top left to bottom right, but openGL reads bottom left to top right
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char* imgTextureBytes = stbi_load("cursed_texture.png",&imgWidth,&imgHeight,&imgNumColCh,0);
+
+	GLuint textureID;
+	glGenTextures(1,&textureID);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D,textureID);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	//rgba is relevant for png format, rgb for jpg
+	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,imgWidth,imgHeight,0,GL_RGBA,GL_UNSIGNED_BYTE,imgTextureBytes);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	//texture cleanup
+	stbi_image_free(imgTextureBytes);
+	glBindTexture(GL_TEXTURE_2D,0);
+
+	GLuint textUniformID = glGetUniformLocation(shader.ID,"tex0");
+	shader.activateShader();
+	glUniform1f(textUniformID,0);
+
+	
 	
 	//Setting a default background colour for now
 	//sets the colour which is used when we clear our buffers
@@ -93,13 +125,14 @@ int main() {
 
 	//loop
 	float scaleFactor = 0.0f;
-	float scaleIterator = 0.01f;
+	float scaleIterator = 0.00f;
 	float maxScale = 0.7f;
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT);
 		shader.activateShader();
 		//can only access uniforms of th active shader program
 		glUniform1f(scaleUniformID, sin(scaleFactor) * maxScale);
+		glBindTexture(GL_TEXTURE_2D,textureID);
 
 		//Bind buffers to be used
 		vao1.bind();
@@ -107,7 +140,7 @@ int main() {
 		//Draw Call
 		//glDrawArrays(GL_TRIANGLES,0,3); this draw call is for raw vertex data only, no IBO
 		//IBO draw call
-		glDrawElements(GL_TRIANGLES,9,GL_UNSIGNED_INT,0);
+		glDrawElements(GL_TRIANGLES,(sizeof(indices)/sizeof(GLuint)),GL_UNSIGNED_INT,0);
 		
 		//Swap Buffers to get the image on screen
 		glfwSwapBuffers(window);
@@ -120,6 +153,7 @@ int main() {
 	vao1.unbind();
 	vbo1.unbind();
 	ibo1.unbind();
+	glDeleteTextures(1,&textureID);
 	shader.deactivateShader();
 
 	glfwDestroyWindow(window);

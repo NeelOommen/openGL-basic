@@ -155,6 +155,7 @@
     <ClCompile Include="IndexBufferClass.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="shaderClass.cpp" />
+    <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="VertexArrayClass.cpp" />
     <ClCompile Include="VertexBufferClass.cpp" />
   </ItemGroup>
@@ -167,6 +168,9 @@
     <ClInclude Include="shaderClass.h" />
     <ClInclude Include="VertexArrayClass.h" />
     <ClInclude Include="VertexBufferClass.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\..\..\PFPS\cursed_texture.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
