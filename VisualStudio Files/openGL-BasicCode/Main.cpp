@@ -8,6 +8,7 @@
 #include "VertexBufferClass.h"
 #include "IndexBufferClass.h"'
 #include "VertexArrayClass.h"
+#include "TextureClass.h"
 
 
 #define height 800
@@ -82,34 +83,9 @@ int main() {
 
 	//Loading texture
 
-	int imgHeight, imgWidth, imgNumColCh;
-	//loads raw img data
-	//important to set flip to true as stbi loads top left to bottom right, but openGL reads bottom left to top right
-	stbi_set_flip_vertically_on_load(true);
-	unsigned char* imgTextureBytes = stbi_load("cursed_texture.png",&imgWidth,&imgHeight,&imgNumColCh,0);
+	texture curTexture("catTexture.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
 
-	GLuint textureID;
-	glGenTextures(1,&textureID);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D,textureID);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-	//rgba is relevant for png format, rgb for jpg
-	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,imgWidth,imgHeight,0,GL_RGBA,GL_UNSIGNED_BYTE,imgTextureBytes);
-	glGenerateMipmap(GL_TEXTURE_2D);
-
-	//texture cleanup
-	stbi_image_free(imgTextureBytes);
-	glBindTexture(GL_TEXTURE_2D,0);
-
-	GLuint textUniformID = glGetUniformLocation(shader.ID,"tex0");
-	shader.activateShader();
-	glUniform1f(textUniformID,0);
+	curTexture.textureUniformUnit(shader, "tex0", 0);
 
 	
 	
@@ -132,7 +108,7 @@ int main() {
 		shader.activateShader();
 		//can only access uniforms of th active shader program
 		glUniform1f(scaleUniformID, sin(scaleFactor) * maxScale);
-		glBindTexture(GL_TEXTURE_2D,textureID);
+		curTexture.bind();
 
 		//Bind buffers to be used
 		vao1.bind();
@@ -153,7 +129,7 @@ int main() {
 	vao1.unbind();
 	vbo1.unbind();
 	ibo1.unbind();
-	glDeleteTextures(1,&textureID);
+	curTexture.deleteTexture();
 	shader.deactivateShader();
 
 	glfwDestroyWindow(window);

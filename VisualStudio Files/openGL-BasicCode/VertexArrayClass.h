@@ -12,7 +12,7 @@ public:
 	VAO();
 
 	//Creates and enables the layout for our current vertex data, 3 floats per vertex (would need to be modified if we had more data(colour, normals, etc)).
-	void linkAttrib(VBO vbo,GLuint layoutIndex, GLuint numComponents, GLenum type, GLsizeiptr size, void* offset);
+	void linkAttrib(VBO& vbo,GLuint layoutIndex, GLuint numComponents, GLenum type, GLsizeiptr size, void* offset);
 	
 	//helper functions
 	void bind();
