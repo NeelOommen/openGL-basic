@@ -3,6 +3,11 @@
 #include <GLFW/glfw3.h>
 #include <cmath>
 #include <stb/stb_image.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+ 
 
 #include "shaderClass.h"
 #include "VertexBufferClass.h"
@@ -17,15 +22,20 @@
 //temporary data for our basic triangles
 GLfloat vertices[] = {
 	//   x       y       z              r       g       b               texX    texY
-		-0.5f,  -0.5f,   0.0f,			1.0f,   0.0f,   0.0f,			0.0f,   0.0f,
-		-0.5f,   0.5f,   0.0f,			0.0f,   1.0f,   0.0f,			0.0f,   1.0f,
-		 0.5f,   0.5f,   0.0f,			0.0f,   0.0f,   1.0f,			1.0f,   1.0f,
-		 0.5f,  -0.5f,   0.0f,			1.0f,   1.0f,   1.0f,			1.0f,   0.0f
+		-0.5f,  0.0f,    0.5f,			0.83f,   0.70f,   0.44f,			0.0f,   0.0f,
+		-0.5f,  0.0f,   -0.5f,			0.83f,   0.70f,   0.44f,			0.0f,   1.0f,
+		 0.5f,  0.0f,   -0.5f,			0.83f,   0.70f,   0.44f,			1.0f,   1.0f,
+		 0.5f,  0.0f,    0.5f,			0.83f,   0.70f,   0.44f,			1.0f,   0.0f,
+		 0.0f,  0.8f,    0.0f,			0.92f,   0.86f,   0.76f,			0.5f,   1.0f
 };
 
 GLuint indices[] = {
-	0,2,1,
-	0,3,2
+	0, 1, 1,
+	0, 2, 3,
+	0, 1, 4,
+	1, 2, 4,
+	2, 3, 4,
+	3, 0, 4
 };
 
 
@@ -83,7 +93,7 @@ int main() {
 
 	//Loading texture
 
-	texture curTexture("catTexture.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+	texture curTexture("cursed_texture.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
 
 	curTexture.textureUniformUnit(shader, "tex0", 0);
 
@@ -103,8 +113,16 @@ int main() {
 	float scaleFactor = 0.0f;
 	float scaleIterator = 0.00f;
 	float maxScale = 0.7f;
+
+	float rotation = 0.0f;
+	float rotationStep = 0.05f;
+	double prevTime = glfwGetTime();
+
+	//Enables the z buffer, so openGL can correctly occlude vertices when they overlap (including primitives)
+	glEnable(GL_DEPTH_TEST);
+
 	while (!glfwWindowShouldClose(window)) {
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		shader.activateShader();
 		//can only access uniforms of th active shader program
 		glUniform1f(scaleUniformID, sin(scaleFactor) * maxScale);
@@ -112,6 +130,38 @@ int main() {
 
 		//Bind buffers to be used
 		vao1.bind();
+
+		//creating Matrices to perform the necessary 3d transforms
+
+		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 view = glm::mat4(1.0f);
+		glm::mat4 proj = glm::mat4(1.0f);
+
+		double crntTime = glfwGetTime();
+		if (crntTime - prevTime >= 1 / 60) {
+			rotation += rotationStep;
+			prevTime = crntTime;
+		}
+
+		//rotating the model for the 3d effect
+		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+
+		//moves the camera by the given vec3
+		view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
+		//sets the projection matrix
+		//                      angle                aspect ratio        near plane  far plane
+		proj = glm::perspective(glm::radians(45.0f), float(width/height), 0.1f,      100.f);
+
+		//passing the matrices to the vert shader as uniforms
+		//note: these uniforms must only be created and set after the shader has been "activated" or bound
+		GLuint modelMatUniform = glGetUniformLocation(shader.ID, "model");
+		glUniformMatrix4fv(modelMatUniform, 1, GL_FALSE, glm::value_ptr(model));
+		GLuint viewMatUniform = glGetUniformLocation(shader.ID, "view");
+		glUniformMatrix4fv(viewMatUniform, 1, GL_FALSE, glm::value_ptr(view));
+		GLuint projMatUniform = glGetUniformLocation(shader.ID, "proj");
+		glUniformMatrix4fv(projMatUniform, 1, GL_FALSE, glm::value_ptr(proj));
+		//the gl_position formula is proj*view*model*vec4(position,1.0)
+		// the order is important as matrix multiplication is not 
 		
 		//Draw Call
 		//glDrawArrays(GL_TRIANGLES,0,3); this draw call is for raw vertex data only, no IBO

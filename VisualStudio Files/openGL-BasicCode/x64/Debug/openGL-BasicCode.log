@@ -1,8 +1,3 @@
 ﻿  Main.cpp
-D:\GitHub\openGL-basic\VisualStudio Files\openGL-BasicCode\Main.cpp(9,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
-  TextureClass.cpp
-D:\GitHub\openGL-basic\VisualStudio Files\openGL-BasicCode\TextureClass.cpp(49,25): warning C4244: 'argument': conversion from 'GLuint' to 'GLfloat', possible loss of data
-  VertexArrayClass.cpp
-D:\GitHub\openGL-basic\VisualStudio Files\openGL-BasicCode\VertexArrayClass.cpp(9,65): warning C4244: 'argument': conversion from 'GLsizeiptr' to 'GLsizei', possible loss of data
-  Generating Code...
+D:\GitHub\openGL-basic\VisualStudio Files\openGL-BasicCode\Main.cpp(14,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
   openGL-BasicCode.vcxproj -> D:\GitHub\openGL-basic\VisualStudio Files\openGL-BasicCode\x64\Debug\openGL-BasicCode.exe
