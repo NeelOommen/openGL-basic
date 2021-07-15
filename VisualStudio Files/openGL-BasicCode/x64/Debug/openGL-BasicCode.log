@@ -1,3 +1,5 @@
-﻿  Main.cpp
+﻿  Camera.cpp
+  Main.cpp
 D:\GitHub\openGL-basic\VisualStudio Files\openGL-BasicCode\Main.cpp(14,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+  Generating Code...
   openGL-BasicCode.vcxproj -> D:\GitHub\openGL-basic\VisualStudio Files\openGL-BasicCode\x64\Debug\openGL-BasicCode.exe

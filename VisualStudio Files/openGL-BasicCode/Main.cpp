@@ -14,6 +14,7 @@
 #include "IndexBufferClass.h"'
 #include "VertexArrayClass.h"
 #include "TextureClass.h"
+#include "Camera.h"
 
 
 #define height 800
@@ -70,7 +71,7 @@ int main() {
 	glViewport(0, 0, width, height);
 
 	//Creating our shaders
-	Shader shader("default.vert","default.frag");
+	Shader shaderCurrent("default.vert","default.frag");
 
 	//Setting up VBO's and VAO's and IBO's
 	VAO vao1;
@@ -84,8 +85,6 @@ int main() {
 	vao1.linkAttrib(vbo1, 1, 3, GL_FLOAT, sizeof(float) * 8, (void*)(3*sizeof(float)));
 	vao1.linkAttrib(vbo1, 2, 2, GL_FLOAT, sizeof(float) * 8, (void*)(6 * sizeof(float)));
 
-	GLuint scaleUniformID = glGetUniformLocation(shader.ID, "scale");
-
 
 	vao1.unbind();
 	vbo1.unbind();
@@ -93,9 +92,9 @@ int main() {
 
 	//Loading texture
 
-	texture curTexture("cursed_texture.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
+	texture curTexture("catTexture.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
 
-	curTexture.textureUniformUnit(shader, "tex0", 0);
+	curTexture.textureUniformUnit(shaderCurrent, "tex0", 0);
 
 	
 	
@@ -110,59 +109,25 @@ int main() {
 	glfwSwapBuffers(window);
 
 	//loop
-	float scaleFactor = 0.0f;
-	float scaleIterator = 0.00f;
-	float maxScale = 0.7f;
-
-	float rotation = 0.0f;
-	float rotationStep = 0.05f;
-	double prevTime = glfwGetTime();
 
 	//Enables the z buffer, so openGL can correctly occlude vertices when they overlap (including primitives)
 	glEnable(GL_DEPTH_TEST);
 
+	//creating a camera object
+	Camera camera(width, height, glm::vec3(0.0f,0.0f, 2.0f));
+
 	while (!glfwWindowShouldClose(window)) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		shader.activateShader();
+		shaderCurrent.activateShader();
 		//can only access uniforms of th active shader program
-		glUniform1f(scaleUniformID, sin(scaleFactor) * maxScale);
 		curTexture.bind();
 
 		//Bind buffers to be used
 		vao1.bind();
 
-		//creating Matrices to perform the necessary 3d transforms
-
-		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 proj = glm::mat4(1.0f);
-
-		double crntTime = glfwGetTime();
-		if (crntTime - prevTime >= 1 / 60) {
-			rotation += rotationStep;
-			prevTime = crntTime;
-		}
-
-		//rotating the model for the 3d effect
-		model = glm::rotate(model, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-
-		//moves the camera by the given vec3
-		view = glm::translate(view, glm::vec3(0.0f, -0.5f, -2.0f));
-		//sets the projection matrix
-		//                      angle                aspect ratio        near plane  far plane
-		proj = glm::perspective(glm::radians(45.0f), float(width/height), 0.1f,      100.f);
-
-		//passing the matrices to the vert shader as uniforms
-		//note: these uniforms must only be created and set after the shader has been "activated" or bound
-		GLuint modelMatUniform = glGetUniformLocation(shader.ID, "model");
-		glUniformMatrix4fv(modelMatUniform, 1, GL_FALSE, glm::value_ptr(model));
-		GLuint viewMatUniform = glGetUniformLocation(shader.ID, "view");
-		glUniformMatrix4fv(viewMatUniform, 1, GL_FALSE, glm::value_ptr(view));
-		GLuint projMatUniform = glGetUniformLocation(shader.ID, "proj");
-		glUniformMatrix4fv(projMatUniform, 1, GL_FALSE, glm::value_ptr(proj));
-		//the gl_position formula is proj*view*model*vec4(position,1.0)
-		// the order is important as matrix multiplication is not 
-		
+		//calculating the appropriate matrix for the camera to render correctly
+		camera.inputHandler(window);
+		camera.Matrix(45.0f, 0.1f, 100.0f, shaderCurrent, "camMat");
 		//Draw Call
 		//glDrawArrays(GL_TRIANGLES,0,3); this draw call is for raw vertex data only, no IBO
 		//IBO draw call
@@ -172,7 +137,6 @@ int main() {
 		glfwSwapBuffers(window);
 
 		glfwPollEvents();
-		scaleFactor += scaleIterator;
 	}
 
 	//cleanup
@@ -180,7 +144,7 @@ int main() {
 	vbo1.unbind();
 	ibo1.unbind();
 	curTexture.deleteTexture();
-	shader.deactivateShader();
+	shaderCurrent.deactivateShader();
 
 	glfwDestroyWindow(window);
 	glfwTerminate();
