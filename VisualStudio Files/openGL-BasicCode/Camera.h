@@ -16,16 +16,22 @@ class Camera {
 public:
 	int width, height;
 	
+	//all mats are given some default value as they are otherwise constructed as a null matrix
 	glm::vec3 Position;
 	glm::vec3 Orientation = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
+
+	bool firstClick = true;
+
+	glm::mat4 cameraMatrix = glm::mat4(1.0f);
 
 	float speed = 0.1f;
 	float sensitivity = 100.0f;
 
 	Camera(int w, int h, glm::vec3 pos);
 
-	void Matrix(float FOVdeg, float nearClipPlane, float farClipPlane, Shader& shader, const char* uniform);
+	void updateMatrix(float FOVdeg, float nearClipPlane, float farClipPlane);
+	void setMatrix(Shader& shader, const char* uniform);
 
 	void inputHandler(GLFWwindow* window);
 };
