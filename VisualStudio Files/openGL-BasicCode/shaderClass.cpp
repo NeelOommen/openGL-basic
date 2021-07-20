@@ -25,7 +25,9 @@ Shader::Shader(const char* vertFilePath, const char* fragFilePath) {
 	std::string fragSource = get_file_data(fragFilePath);
 
 	const char* vertShader = vertSource.c_str();
+	//std::cout << vertShader << std::endl;
 	const char* fragShader = fragSource.c_str();
+	//std::cout << fragShader << std::endl;
 
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader,1,&vertShader,NULL);

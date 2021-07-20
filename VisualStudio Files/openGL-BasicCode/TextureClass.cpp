@@ -40,12 +40,13 @@ texture::texture(const char* textureFilePath, GLenum texType, GLenum slot, GLenu
 	glGenerateMipmap(type);
 
 	stbi_image_free(data);
-	glBindTexture(type, 0);
+	glBindTexture(type, ID);
 }
 
 void texture::textureUniformUnit(Shader &shader, const char* uniform, GLuint unit) {
 	GLuint uniformID = glGetUniformLocation(shader.ID, uniform);
 	shader.activateShader();
 	glUniform1f(uniformID, unit);
-	shader.deactivateShader();
+	//DO NOT DEACTIVATE THE SHADER HERE, OR AT ALL UNTIL YOU ARE DONE USING IT COMPLETELY, AS IT IS GONE PERMANENTLY AS WE USE DELETESHADER
+	//rip my sanity trying to find this bug, going on 72 hrs now ( ._.)
 }

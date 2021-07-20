@@ -7,11 +7,13 @@ out vec3 colour;
 out vec2 texCoord;
 
 //CPU calculated camera matrix
-uniform mat4 camMat;
+uniform mat4 camMatrix;
+
+uniform mat4 model;
 
 void main()
 {
-	gl_Position = camMat * vec4(aPos,1.0);
+	gl_Position = camMatrix * vec4(aPos,1.0f);
 	colour = iColour;
 	texCoord = aTex;
 }

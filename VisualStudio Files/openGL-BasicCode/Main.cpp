@@ -22,7 +22,7 @@
 
 //temporary data for our basic triangles
 GLfloat vertices[] = {
-	//   x       y       z              r       g       b               texX    texY
+	//   x       y       z              r       g       b                   texX    texY
 		-0.5f,  0.0f,    0.5f,			0.83f,   0.70f,   0.44f,			0.0f,   0.0f,
 		-0.5f,  0.0f,   -0.5f,			0.83f,   0.70f,   0.44f,			0.0f,   1.0f,
 		 0.5f,  0.0f,   -0.5f,			0.83f,   0.70f,   0.44f,			1.0f,   1.0f,
@@ -31,12 +31,38 @@ GLfloat vertices[] = {
 };
 
 GLuint indices[] = {
-	0, 1, 1,
+	0, 1, 2,
 	0, 2, 3,
 	0, 1, 4,
 	1, 2, 4,
 	2, 3, 4,
 	3, 0, 4
+};
+
+GLfloat lightVert[] = {
+	-0.1f, -0.1f,  0.1f,
+	-0.1f, -0.1f, -0.1f,
+ 	 0.1f, -0.1f, -0.1f, 
+	 0.1f, -0.1f,  0.1f,
+	-0.1f,  0.1f,  0.1f,
+	-0.1f,  0.1f, -0.1f,
+	 0.1f,  0.1f, -0.1f,
+	 0.1f,  0.1f,  0.1f
+};
+
+GLuint lightIndices[] = {
+	0, 1, 2,
+	0, 2, 3,
+	0, 4, 7,
+	0, 7, 3,
+	3, 7, 6,
+	3, 6, 2,
+	2, 6, 5,
+	2, 5, 1,
+	1, 5, 4,
+	1, 4, 0,
+	4, 5, 6,
+	4, 6, 7
 };
 
 
@@ -71,7 +97,9 @@ int main() {
 	glViewport(0, 0, width, height);
 
 	//Creating our shaders
-	Shader shaderCurrent("default.vert","default.frag");
+	//model shaders
+	Shader shaderProgram("default.vert", "default.frag");
+
 
 	//Setting up VBO's and VAO's and IBO's
 	VAO vao1;
@@ -81,20 +109,61 @@ int main() {
 	IBO ibo1(indices,sizeof(indices));
 
 	//linking the layout and vbo to the vao
-	vao1.linkAttrib(vbo1, 0, 3,GL_FLOAT,  sizeof(float) * 8, (void* )0);
-	vao1.linkAttrib(vbo1, 1, 3, GL_FLOAT, sizeof(float) * 8, (void*)(3*sizeof(float)));
-	vao1.linkAttrib(vbo1, 2, 2, GL_FLOAT, sizeof(float) * 8, (void*)(6 * sizeof(float)));
+	vao1.linkAttrib(vbo1, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)(0));
+	vao1.linkAttrib(vbo1, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3*sizeof(float)));
+	vao1.linkAttrib(vbo1, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 
 
 	vao1.unbind();
 	vbo1.unbind();
 	ibo1.unbind();
 
+	
+
+	//light shaders
+	Shader lightShader("light.vert", "light.frag");
+
+	//Creating the light model
+	VAO lightVao;
+	lightVao.bind();
+	 
+	VBO lightVBO(lightVert, sizeof(lightVert));
+	IBO lightIBO(lightIndices, sizeof(lightIndices));
+
+	lightVao.linkAttrib(lightVBO, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+	
+	
+	lightVao.unbind();
+	lightVBO.unbind();
+	lightIBO.unbind();
+
+	
+
+	//creating the model Matrices for the pyramid
+	glm::vec3 lightPos = glm::vec3(0.5f, 0.5f, 0.5f);
+	glm::mat4 lightModel = glm::mat4(1.0f);
+	lightModel = glm::translate(lightModel, lightPos);
+
+	glm::vec3 pyramidPos = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::mat4 pyramidModel = glm::mat4(1.0f);
+	pyramidModel = glm::translate(pyramidModel, pyramidPos);
+
+	glm::vec4 lightColour(1.0f, 0.0f, 0.0f, 1.0f);
+
+	lightShader.activateShader();
+	glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
+	glUniform4f(glGetUniformLocation(lightShader.ID, "lightColour"), lightColour.x, lightColour.y, lightColour.z, lightColour.w);
+	shaderProgram.activateShader();
+	glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
+	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColour"), lightColour.x, lightColour.y, lightColour.z, lightColour.w);
+
+	
+
 	//Loading texture
 
 	texture curTexture("catTexture.png", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGBA, GL_UNSIGNED_BYTE);
 
-	curTexture.textureUniformUnit(shaderCurrent, "tex0", 0);
+	curTexture.textureUniformUnit(shaderProgram, "tex0", 0);
 
 	
 	
@@ -121,21 +190,27 @@ int main() {
 	while (!glfwWindowShouldClose(window)) {
 		startTime = glfwGetTime();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		shaderCurrent.activateShader();
-		//can only access uniforms of th active shader program
-		curTexture.bind();
-
-		//Bind buffers to be used
-		vao1.bind();
 
 		//calculating the appropriate matrix for the camera to render correctly
 		camera.inputHandler(window);
+		//updating the camera matrix
 		camera.updateMatrix(45.0f, 0.1f, 100.0f);
-		camera.setMatrix(shaderCurrent, "camMat");
-		//Draw Call
-		//glDrawArrays(GL_TRIANGLES,0,3); this draw call is for raw vertex data only, no IBO
-		//IBO draw call
-		glDrawElements(GL_TRIANGLES,(sizeof(indices)/sizeof(GLuint)),GL_UNSIGNED_INT,0);
+
+		
+
+		shaderProgram.activateShader();
+		camera.setCamMatrix(shaderProgram, "camMatrix");
+		curTexture.bind();
+		vao1.bind();
+		glDrawElements(GL_TRIANGLES, (sizeof(indices) / sizeof(int)), GL_UNSIGNED_INT, 0);
+
+		lightShader.activateShader();
+		camera.setCamMatrix(lightShader, "camMatrix");
+		lightVao.bind();
+		glDrawElements(GL_TRIANGLES, sizeof(lightIndices)/sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+		
+		
 		
 		//Swap Buffers to get the image on screen
 		glfwSwapBuffers(window);
@@ -150,7 +225,8 @@ int main() {
 	vbo1.unbind();
 	ibo1.unbind();
 	curTexture.deleteTexture();
-	shaderCurrent.deactivateShader();
+	shaderProgram.deactivateShader();
+	lightShader.deactivateShader();
 
 	glfwDestroyWindow(window);
 	glfwTerminate();

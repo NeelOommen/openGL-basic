@@ -31,7 +31,7 @@ public:
 	Camera(int w, int h, glm::vec3 pos);
 
 	void updateMatrix(float FOVdeg, float nearClipPlane, float farClipPlane);
-	void setMatrix(Shader& shader, const char* uniform);
+	void setCamMatrix(Shader& shader, const char* uniform);
 
 	void inputHandler(GLFWwindow* window);
 };
