@@ -22,21 +22,37 @@
 
 //temporary data for our basic triangles
 GLfloat vertices[] = {
-	//   x       y       z              r       g       b                   texX    texY
-		-0.5f,  0.0f,    0.5f,			0.83f,   0.70f,   0.44f,			0.0f,   0.0f,
-		-0.5f,  0.0f,   -0.5f,			0.83f,   0.70f,   0.44f,			0.0f,   1.0f,
-		 0.5f,  0.0f,   -0.5f,			0.83f,   0.70f,   0.44f,			1.0f,   1.0f,
-		 0.5f,  0.0f,    0.5f,			0.83f,   0.70f,   0.44f,			1.0f,   0.0f,
-		 0.0f,  0.8f,    0.0f,			0.92f,   0.86f,   0.76f,			0.5f,   1.0f
+	// Positions                      Colour                    Texture Coord                Normals
+	-0.5f,  0.0f,  0.5f,		 0.83f,  0.70f,  0.44f,			 0.0f,  0.0f,			 0.0f, -1.0f,  0.0f, //bottom face
+	-0.5f,  0.0f, -0.5f,		 0.83f,  0.70f,  0.44f,			 0.0f,  0.0f,			 0.0f, -1.0f,  0.0f, //bottom face
+	 0.5f,  0.0f, -0.5f,		 0.83f,  0.70f,  0.44f,			 0.0f,  0.0f,			 0.0f, -1.0f,  0.0f, //bottom face
+	 0.5f,  0.0f,  0.5f,		 0.83f,  0.70f,  0.44f,			 0.0f,  0.0f,			 0.0f, -1.0f,  0.0f, //bottom face
+
+	-0.5f,  0.0f,  0.5f,		 0.83f,  0.70f,  0.44f,			 0.0f,  0.0f,			-0.8f,  0.5f,  0.0f, //left face
+	-0.5f,  0.0f, -0.5f,		 0.83f,  0.70f,  0.44f,			 5.0f,  0.0f,			-0.8f,  0.5f,  0.0f, //left face
+	 0.0f,  0.8f,  0.0f,		 0.92f,  0.86f,  0.76f,			 2.5f,  5.0f,			-0.8f,  0.5f,  0.0f, //left face
+
+	-0.5f,  0.0f, -0.5f,		 0.83f,  0.70f,  0.44f,          5.0f,  0.0f,			 0.0f,  0.5f, -0.8f, //non-facing side
+	 0.5f,  0.0f, -0.5f,		 0.83f,  0.70f,  0.44f,			 0.0f,  0.0f,			 0.0f,  0.5f, -0.8f, //non-facing side
+	 0.0f,  0.8f,  0.0f,		 0.92f,  0.86f,  0.76f,			 2.5f,  5.0f,			 0.0f,  0.5f, -0.8f, //non-facing side
+
+	 0.5f,  0.0f, -0.5f,		 0.83f,  0.70f,  0.44f,			 0.0f,  0.0f,			 0.8f,  0.5f,  0.0f, //right face
+	 0.5f,  0.0f,  0.5f,		 0.83f,  0.70f,  0.44f,			 5.0f,  0.0f,			 0.8f,  0.5f,  0.0f, //right face
+	 0.0f,  0.8f,  0.0f,		 0.92f,  0.86f,  0.76f,			 2.5f,  5.0f,			 0.8f,  0.5f,  0.0f, //right face
+
+	 0.5f,  0.0f,  0.5f,         0.83f,  0.70f,  0.44f,			 1.0f,  0.0f,			 0.0f,  0.5f,  0.8f, //Facing Side
+	-0.5f,  0.0f,  0.5f,		 0.83f,  0.70f,  0.44f,			 0.0f,  0.0f,			 0.0f,  0.5f,  0.8f, //Facing Side
+	 0.0f,  0.8f,  0.0f,		 0.92f,  0.86f,  0.76f,			 0.5f,  0.0f,			 0.0f,  0.5f,  0.8f  //Facing Side
+		
 };
 
 GLuint indices[] = {
-	0, 1, 2,
-	0, 2, 3,
-	0, 1, 4,
-	1, 2, 4,
-	2, 3, 4,
-	3, 0, 4
+	0, 1, 2,    //Bottom Face I
+	0, 2, 3,    //Bottom Face II
+	4, 6, 5,    //Left Face
+	7, 9, 8,    //Back Face
+	10, 12, 11, //Right Face
+	13, 15, 14  //Front Face
 };
 
 GLfloat lightVert[] = {
@@ -109,10 +125,10 @@ int main() {
 	IBO ibo1(indices,sizeof(indices));
 
 	//linking the layout and vbo to the vao
-	vao1.linkAttrib(vbo1, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)(0));
-	vao1.linkAttrib(vbo1, 1, 3, GL_FLOAT, 8 * sizeof(float), (void*)(3*sizeof(float)));
-	vao1.linkAttrib(vbo1, 2, 2, GL_FLOAT, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-
+	vao1.linkAttrib(vbo1, 0, 3, GL_FLOAT, 11 * sizeof(float), (void*)(0));
+	vao1.linkAttrib(vbo1, 1, 3, GL_FLOAT, 11 * sizeof(float), (void*)(3 * sizeof(float)));
+	vao1.linkAttrib(vbo1, 2, 2, GL_FLOAT, 11 * sizeof(float), (void*)(6 * sizeof(float)));
+	vao1.linkAttrib(vbo1, 3, 3, GL_FLOAT, 11 * sizeof(float), (void*)(8 * sizeof(float)));
 
 	vao1.unbind();
 	vbo1.unbind();
@@ -148,14 +164,12 @@ int main() {
 	glm::mat4 pyramidModel = glm::mat4(1.0f);
 	pyramidModel = glm::translate(pyramidModel, pyramidPos);
 
-	glm::vec4 lightColour(1.0f, 0.0f, 0.0f, 1.0f);
-
 	lightShader.activateShader();
 	glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
-	glUniform4f(glGetUniformLocation(lightShader.ID, "lightColour"), lightColour.x, lightColour.y, lightColour.z, lightColour.w);
+	
 	shaderProgram.activateShader();
 	glUniformMatrix4fv(glGetUniformLocation(shaderProgram.ID, "model"), 1, GL_FALSE, glm::value_ptr(pyramidModel));
-	glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColour"), lightColour.x, lightColour.y, lightColour.z, lightColour.w);
+	
 
 	
 
@@ -187,6 +201,11 @@ int main() {
 
 	double startTime;
 
+	float r, g, b;
+	r = 0.0f;
+	g = 0.0f;
+	b = 0.0f;
+
 	while (!glfwWindowShouldClose(window)) {
 		startTime = glfwGetTime();
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -202,14 +221,21 @@ int main() {
 		camera.setCamMatrix(shaderProgram, "camMatrix");
 		curTexture.bind();
 		vao1.bind();
+		
+		glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColour"), abs(sin(r)), abs(sin(g)), abs(sin(b)), 1.0f);
+		//glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColour"), 1.0f, 1.0f, 1.0f,1.0f);
+		glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 		glDrawElements(GL_TRIANGLES, (sizeof(indices) / sizeof(int)), GL_UNSIGNED_INT, 0);
 
 		lightShader.activateShader();
 		camera.setCamMatrix(lightShader, "camMatrix");
 		lightVao.bind();
+		glUniform4f(glGetUniformLocation(lightShader.ID, "lightColour"), abs(sin(r)), abs(sin(g)), abs(sin(b)), 1.0f);
 		glDrawElements(GL_TRIANGLES, sizeof(lightIndices)/sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
-		
+		r += 0.002f;
+		g += 0.1f;
+		b += 0.05f;
 		
 		
 		//Swap Buffers to get the image on screen
