@@ -218,11 +218,14 @@ int main() {
 		
 
 		shaderProgram.activateShader();
+		//Passing in the cameraPosition to the fragment shader, for it to calculate the angle required for the specular reflection calculation
+		glUniform3f(glGetUniformLocation(shaderProgram.ID, "camPos"), camera.Position.x, camera.Position.y, camera.Position.z);
 		camera.setCamMatrix(shaderProgram, "camMatrix");
 		curTexture.bind();
 		vao1.bind();
 		
 		glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColour"), abs(sin(r)), abs(sin(g)), abs(sin(b)), 1.0f);
+		//White Light Uniform
 		//glUniform4f(glGetUniformLocation(shaderProgram.ID, "lightColour"), 1.0f, 1.0f, 1.0f,1.0f);
 		glUniform3f(glGetUniformLocation(shaderProgram.ID, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 		glDrawElements(GL_TRIANGLES, (sizeof(indices) / sizeof(int)), GL_UNSIGNED_INT, 0);
